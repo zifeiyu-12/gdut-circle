@@ -1,0 +1,14 @@
+#content {
+  min-height: 100vh;
+  transition: transform 0.3s ease;
+}
+#refresh-indicator {
+  height: 160px;
+  line-height: 160px;
+  text-align: center;
+}
+#pulldown-box {
+  transition: transform 0.5s ease;
+  top: -160px;
+  position: absolute;
+}
