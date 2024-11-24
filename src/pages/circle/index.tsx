@@ -3,7 +3,7 @@ import { CircleType, refreshCircleList } from "../../store/slice/circle";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Divider, Dropdown, Empty, Tabs, TabsProps } from "antd";
 import { DashOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { TopicType } from "../../store/slice/topic";
+import topic, { TopicType } from "../../store/slice/topic";
 import { TopicDetail } from "../../components/topic-detail";
 import { setCircleList } from "../../store/slice/circle";
 import { useNavigate } from "react-router-dom";
@@ -13,10 +13,11 @@ import { useRequest } from "ahooks";
 import { getCircleList } from "../../api/circle";
 import { getCircleTopicList } from "../../api/topic";
 import Loading from "../../components/loading";
+import { TopicItem } from "../../components/topic-item";
+import { Topics } from "../../types/topic";
 
 export interface CirclePorps {}
 const Circle: FC<CirclePorps> = () => {
-  const [topicList, setTopicList] = useState<TopicType[]>([]);
   const [pagination, setPagination] = useState({ page: 1, size: 10 });
   const [activekey, setActivekey] = useState<string>();
   const { data, loading } = useRequest(
@@ -100,6 +101,7 @@ const Circle: FC<CirclePorps> = () => {
   }, [data, activekey]);
   const [start, setStart] = useState<number>(0);
   const hiddenRef = useRef<(value: boolean) => void>();
+  const [topicDetail, setTopicDetail] = useState<Topics | null>();
   return (
     <>
       {loading || topicLoading ? (
@@ -148,12 +150,22 @@ const Circle: FC<CirclePorps> = () => {
             <>
               {topicData?.map((item) => {
                 return (
-                  <TopicDetail {...item} key={item.topics?.id}></TopicDetail>
+                  <div
+                    key={item?.topics?.id}
+                    onClick={() => {
+                      setTopicDetail(item?.topics);
+                    }}
+                  >
+                    <TopicItem {...item?.topics}></TopicItem>
+                  </div>
                 );
               })}
-              {!topicData?.length && <Empty></Empty>}
-              <div className="h-10"></div>
             </>
+            <TopicDetail
+              visible={Boolean(topicDetail)}
+              onClose={() => setTopicDetail(null)}
+              topics={topicDetail as Topics}
+            ></TopicDetail>
           </div>
         </PullToRefresh>
       )}

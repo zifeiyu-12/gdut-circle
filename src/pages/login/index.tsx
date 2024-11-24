@@ -21,6 +21,7 @@ const Login = () => {
           localStorage.removeItem("loginInfo");
         }
         message.success("登录成功");
+        navigate("/");
       }
     } finally {
       setLoading(false);

@@ -18,6 +18,7 @@ service.interceptors.request.use(
     if (config.url === "/user/login" || config.url === "/user/register") {
       return config;
     }
+
     if (!token) {
       window.location.href = "/login";
       return config;

@@ -1,80 +1,89 @@
 import { Button } from "antd";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
-import { TopicType } from "../../store/slice/topic";
+import topic, { TopicType } from "../../store/slice/topic";
 import { Divider, Popup, Input, ImageUploader, Empty } from "antd-mobile";
 import { FileImageOutlined } from "@ant-design/icons";
 import { TopicItem } from "../topic-item";
 import { TopicsVO } from "../../types/topic";
-export const TopicDetail: FC<TopicsVO> = (topic) => {
-  const [popupVisible, setPopupVisible] = useState(false);
-  const [commentList, SetCommentList] = useState<TopicType[]>([
-    {
-      content: "评论内容",
-      id: "12",
-      createTime: new Date().getTime(),
+import { useRequest } from "ahooks";
+import { CreateComment, getCommentList } from "../../api/comment";
+import Loading from "../loading";
+export interface TopicDetailProps extends TopicsVO {
+  visible: boolean;
+  onClose: () => void;
+}
+export const TopicDetail: FC<TopicDetailProps> = ({
+  topics,
+  visible,
+  onClose,
+}) => {
+  const {
+    data: commentList,
+    loading,
+    refreshAsync,
+  } = useRequest(
+    async () => {
+      const id = topics?.id;
+      if (!id) return [];
+      const res = await getCommentList({ topicId: id });
+      if (res.success) {
+        return res.data;
+      }
+      return [];
     },
-  ]);
-  const [inputVisible, setInputVisible] = useState(false);
+    {
+      cacheKey: "commentList" + topics?.id,
+    }
+  );
+  useEffect(() => {
+    refreshAsync();
+  }, [topics?.id]);
+
   const [content, setContent] = useState("");
   const [uploadVisible, setUploadVisible] = useState(false);
   const [fileList, setFileList] = useState<any[]>([]);
-  const sendComment = () => {
+  const sendComment = async () => {
     if (!content) return;
-    SetCommentList([
-      {
-        id: new Date().getTime().toString(),
-        content,
-        createTime: new Date().getTime(),
-        imageList: fileList,
-      },
-      ...commentList,
-    ]);
-    setContent("");
-    setFileList([]);
-    setUploadVisible(false);
+    if (!topics?.id) return;
+    const res = await CreateComment({
+      content,
+      topicId: topics?.id,
+    });
+    if (res.success) {
+      setContent("");
+      setFileList([]);
+      setUploadVisible(false);
+      refreshAsync();
+    }
   };
-  const handleClose = () => {
-    setPopupVisible(false);
-    setInputVisible(false);
-  };
-
   return (
     <>
-      <div
-        onClick={() => {
-          setPopupVisible(true);
-        }}
-      >
-        <TopicItem {...topic}></TopicItem>
-      </div>
       <Popup
-        visible={popupVisible}
-        onMaskClick={handleClose}
-        onClose={handleClose}
+        visible={visible}
+        onMaskClick={onClose}
+        onClose={onClose}
         bodyStyle={{ height: "80vh" }}
         className="overflow-y-scroll"
       >
         <div className="h-full overflow-y-scroll">
-          <div
-            onClick={() => {
-              setInputVisible(true);
-            }}
-          >
-            <TopicItem {...topic}></TopicItem>
-          </div>
+          <TopicItem {...topics}></TopicItem>
 
           <Divider>讨论区</Divider>
-          <div className="gap-y-2 flex flex-col">
-            {commentList.map((item) => {
-              return <TopicItem {...item} key={item.id}></TopicItem>;
-            })}
-            <div className="h-10"></div>
-            {!commentList.length && <Empty description="暂无评论"></Empty>}
-          </div>
+          {loading ? (
+            <Loading></Loading>
+          ) : (
+            <div className="gap-y-2 flex flex-col">
+              {commentList?.map((item) => {
+                return <TopicItem {...item} key={item.id}></TopicItem>;
+              })}
+              <div className="h-10"></div>
+              {!commentList?.length && <Empty description="暂无评论"></Empty>}
+            </div>
+          )}
         </div>
       </Popup>
-      {inputVisible && (
+      {visible && (
         <div className=" fixed bottom-0 z-[1002] bg-gray-100 w-screen  py-1 px-3 flex flex-col gap-y-2">
           <div className="flex gap-x-4">
             <Input

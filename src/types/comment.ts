@@ -29,3 +29,16 @@ export interface Comments {
   userInfo?: UserInfo;
   [property: string]: any;
 }
+
+export interface CommentsRequest {
+  topicId: number;
+}
+/**
+ * 创建评论实体类
+ *
+ * Comments
+ */
+export interface CommentInfo {
+  content: string;
+  topicId: number;
+}
