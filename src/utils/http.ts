@@ -18,8 +18,7 @@ service.interceptors.request.use(
     if (config.url === "/user/login" || config.url === "/user/register") {
       return config;
     }
-
-    if (!token) {
+    if (!token && !token.length) {
       window.location.href = "/login";
       return config;
     }
@@ -39,6 +38,9 @@ service.interceptors.response.use(
     const { data } = response;
     if (!data.success) {
       message.info(data.message);
+    }
+    if (data.message == "token过期,请重新登录") {
+      window.location.href = "/login";
     }
     return data;
   },

@@ -2,7 +2,6 @@ import { PageVO } from "../types/common";
 import {
   CircleTopicRequest,
   TopicData,
-  Topics,
   TopicsVO,
   topicRequest,
 } from "../types/topic";

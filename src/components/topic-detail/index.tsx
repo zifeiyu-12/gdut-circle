@@ -1,7 +1,6 @@
 import { Button } from "antd";
 import { FC, useEffect, useState } from "react";
 
-import topic, { TopicType } from "../../store/slice/topic";
 import { Divider, Popup, Input, ImageUploader, Empty } from "antd-mobile";
 import { FileImageOutlined } from "@ant-design/icons";
 import { TopicItem } from "../topic-item";

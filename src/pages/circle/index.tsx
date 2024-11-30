@@ -1,9 +1,6 @@
-import { connect } from "react-redux";
-import { CircleType, refreshCircleList } from "../../store/slice/circle";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { Divider, Dropdown, Empty, Tabs, TabsProps } from "antd";
-import { DashOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import topic, { TopicType } from "../../store/slice/topic";
+import { Dropdown, Tabs, TabsProps } from "antd";
+import { DashOutlined, PlusOutlined } from "@ant-design/icons";
 import { TopicDetail } from "../../components/topic-detail";
 import { setCircleList } from "../../store/slice/circle";
 import { useNavigate } from "react-router-dom";
