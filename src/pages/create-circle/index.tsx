@@ -1,15 +1,13 @@
-import { Button, Input, Upload, Image, Divider } from "antd";
+import { Button, Input, Divider } from "antd";
 import { ImageUploadItem, ImageUploader, NavBar } from "antd-mobile";
 import { useNavigate } from "react-router-dom";
-import type { GetProp, UploadFile, UploadProps } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useMemo, useState } from "react";
 import { CirclePreview } from "../../components/circle-preview";
-import { CircleType } from "../../store/slice/circle";
 import { handleUpload } from "../../utils/handleUpload";
 import { createCicle } from "../../api/circle";
-type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
-export default function CreateTopic() {
+const CreateCircle = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -80,4 +78,5 @@ export default function CreateTopic() {
       </div>
     </div>
   );
-}
+};
+export default CreateCircle;

@@ -2,8 +2,9 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Dropdown, Tabs, TabsProps } from "antd";
 import { DashOutlined, PlusOutlined } from "@ant-design/icons";
 import { TopicDetail } from "../../components/topic-detail";
-import circle, {
+import {
   CircleModelType,
+  addCircleList,
   setCircleList,
   setPagination,
   setTotal,
@@ -19,47 +20,56 @@ import { TopicItem } from "../../components/topic-item";
 import { Topics } from "../../types/topic";
 import { connect } from "react-redux";
 import { Circles } from "../../types/circle";
+import { useCircleList } from "../../hooks/useCircleLIst";
+const MAX_TAB_COUNT = 3;
 export interface CirclePorps {
   circleInfo: CircleModelType;
   setCircleList: (circle: Circles[]) => void;
-  setPaginatin: (pagination: { page: number; size: number }) => void;
+  setPagination: (pagination: { page: number; size: number }) => void;
   setTotal: (total: number) => void;
 }
 const Circle: FC<CirclePorps> = ({
   circleInfo: { circleList, page, size },
   setCircleList,
-  setPaginatin,
+  setPagination,
   setTotal,
 }) => {
   const [, setSerachParams] = useSearchParams();
   const [activekey, setActivekey] = useState<string>();
-  const { loading } = useRequest(async () => {
-    const res = await getCircleList({
-      page,
-      size,
-    });
-    if (res.success) {
-      setActivekey(String(res.data?.data?.[0].id));
-      setSerachParams({ circleId: res.data?.data?.[0].id + "" });
-      setCircleList(res.data?.data ?? []);
-      return res.data?.data;
+  const { loading, runAsync: refreshCircleList } = useCircleList();
+  useEffect(() => {
+    if (circleList && circleList.length === 0) {
+      refreshCircleList(page, size).then((res) => {
+        if (res.success) {
+          setActivekey(String(res.data?.data?.[0].id));
+          setSerachParams({ circleId: res.data?.data?.[0].id + "" });
+          setCircleList(res.data?.data ?? []);
+          setTotal(res.data?.totalCount ?? 0);
+          setPagination({ page: page + 1, size });
+          return res.data?.data;
+        }
+      });
     }
-  });
+  }, []);
   const items: TabsProps["items"] = useMemo(() => {
     if (!circleList) return [];
     const res: TabsProps["items"] = [
-      ...circleList.slice(0, 4).map((item) => ({
+      ...circleList.slice(0, MAX_TAB_COUNT).map((item) => ({
         key: String(item.id ?? new Date().getTime()),
-        label: item.name ?? "匿名圈",
+        label: (
+          <div className="max-w-[90px] text-ellipsis overflow-hidden">
+            {item.name ?? "匿名圈"}
+          </div>
+        ),
       })),
     ];
-    if (circleList.length > 4) {
+    if (circleList.length > MAX_TAB_COUNT) {
       res.push({
         key: "0",
         label: (
           <Dropdown
             menu={{
-              items: circleList.slice(4).map((item) => ({
+              items: circleList.slice(MAX_TAB_COUNT).map((item) => ({
                 key: String(item.id ?? new Date().getTime()),
                 label: item.name ?? "匿名圈",
               })),
@@ -102,7 +112,6 @@ const Circle: FC<CirclePorps> = ({
       }
     },
     {
-      cacheKey: "circleTopicList" + topicPagination.page + topicPagination.size,
       manual: true,
     }
   );
@@ -112,7 +121,7 @@ const Circle: FC<CirclePorps> = ({
 
   const navigate = useNavigate();
   const item = useMemo(() => {
-    return circleList?.find((item) => item.id === activekey);
+    return circleList?.find((item) => item.id == activekey);
   }, [circleList, activekey]);
   const [start, setStart] = useState<number>(0);
   const hiddenRef = useRef<(value: boolean) => void>();
@@ -153,7 +162,7 @@ const Circle: FC<CirclePorps> = ({
                 tabBarGutter={20}
                 items={items}
                 onChange={(key) => {
-                  setActivekey(key);
+                  if (Number(key) !== 0) setActivekey(key);
                   setSerachParams({
                     circleId: key,
                   });
@@ -200,5 +209,6 @@ export default connect(
     setCircleList,
     setPagination,
     setTotal,
+    addCircleList,
   }
 )(Circle);

@@ -41,12 +41,7 @@ export const useMenuItem: (
       onClick: handleUpgradeAccount,
     },
     {
-      title: "圈管理",
-      icon: <UsergroupDeleteOutlined />,
-      path: "/circle-manage",
-    },
-    {
-      title: "话题管理",
+      title: "话题审核",
       icon: <UserOutlined />,
       path: "/topic-manage",
     },

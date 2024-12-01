@@ -3,7 +3,7 @@ import { Circles } from "../../types/circle";
 const initalValue: CircleModelType = {
   circleList: [],
   page: 0,
-  size: 5,
+  size: 6,
   total: 0,
 };
 export interface CircleModelType {
@@ -19,6 +19,9 @@ export const circleSlice = createSlice({
   reducers: {
     setCircleList: (state, action) => {
       state.circleList = action.payload;
+    },
+    addCircleList: (state, action) => {
+      state.circleList = [...state.circleList, ...action.payload];
       return state;
     },
     setPagination: (state, action) => {
@@ -31,6 +34,7 @@ export const circleSlice = createSlice({
   },
 });
 // 导出action creators
-export const { setCircleList, setPagination, setTotal } = circleSlice.actions;
+export const { setCircleList, setPagination, setTotal, addCircleList } =
+  circleSlice.actions;
 // 导出reducer
 export default circleSlice.reducer;

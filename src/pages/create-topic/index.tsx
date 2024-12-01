@@ -1,52 +1,75 @@
 import { Button, Input, message } from "antd";
-import { ImageUploadItem, ImageUploader, NavBar } from "antd-mobile";
-import { useNavigate } from "react-router-dom";
+import { ImageUploadItem, ImageUploader, NavBar, Picker } from "antd-mobile";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { GetProp, UploadProps } from "antd";
-import { useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { TopicType } from "../../store/slice/topic";
 import "./index.css";
-
+import {
+  CircleModelType,
+  addCircleList,
+  setCircleList,
+  setPagination,
+  setTotal,
+} from "../../store/slice/circle";
 import { handleUpload } from "../../utils/handleUpload";
+import { connect } from "react-redux";
+import { Circles } from "../../types/circle";
+import { useRequest } from "ahooks";
+import { getCircleList } from "../../api/circle";
+import { useCircleList } from "../../hooks/useCircleLIst";
+import { createTopic } from "../../api/topic";
+import { CirclePreview } from "../../components/circle-preview";
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-
-export default function CreateTopic() {
+export interface CreateTopicPorps {
+  circleInfo: CircleModelType;
+  setCircleList: (circle: Circles[]) => void;
+  setPagination: (pagination: { page: number; size: number }) => void;
+  setTotal: (total: number) => void;
+}
+const CreateTopic: FC<CreateTopicPorps> = ({
+  setCircleList,
+  setPagination,
+  setTotal,
+  circleInfo,
+}) => {
+  const { circleList, page, size } = circleInfo;
   const navigate = useNavigate();
   const [content, setContent] = useState<string>("");
 
   const [fileList, setFileList] = useState<ImageUploadItem[]>([]);
 
+  const { runAsync: refreshCircleList, loading } = useCircleList();
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    if (circleList && circleList.length === 0) {
+      refreshCircleList(page, size).then((res) => {
+        if (res.success) {
+          setCircleList(res.data?.data ?? []);
+          setTotal(res.data?.totalCount ?? 0);
+          setPagination({ page: page + 1, size });
+          return res.data?.data;
+        }
+      });
+    }
+  }, []);
+  const [visible, setVisible] = useState(false);
+  const [circleId, setCirCleId] = useState(searchParams.get("circleId"));
+  const item = useMemo(() => {
+    if (!circleId) return null;
+    return circleList.find((item) => Number(item.id) === Number(circleId));
+  }, [circleId, circleList]);
   const submit = async () => {
-    try {
-      const topiclist: TopicType[] = JSON.parse(
-        localStorage.getItem("topicList") || "[]"
-      );
-      localStorage.setItem(
-        "topicList",
-        JSON.stringify([
-          {
-            id: new Date().getTime().toString(),
-            content,
-            imageList: await Promise.all(
-              fileList.map(async (item) => {
-                if (!item.url) {
-                  item.url = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(item.originFileObj as FileType);
-                    reader.onload = () => resolve(reader.result as string);
-                  });
-                }
-                return item;
-              })
-            ),
-            createTime: new Date().getTime(),
-          },
-          ...topiclist,
-        ])
-      );
+    const { success, message: mes } = await createTopic({
+      content,
+      circleId: +(circleId ?? "0"),
+      title: "",
+      media: fileList.map((item) => item.url).join(","),
+    });
+    if (success) {
+      message.success(mes);
       navigate(-1);
-    } catch (e) {
-      message.error("发布失败" + e);
     }
   };
 
@@ -61,8 +84,32 @@ export default function CreateTopic() {
         }
       ></NavBar>
       <div className="p-5 px-6">
+        <div
+          onClick={() => {
+            setVisible(true);
+          }}
+        >
+          {item && <CirclePreview {...item}></CirclePreview>}
+        </div>
+        <Picker
+          columns={[
+            circleList.map((item) => ({
+              value: item.id ?? "0",
+              label: item.name ?? "匿名圈",
+              key: item.id ?? "0",
+            })),
+          ]}
+          visible={visible}
+          onClose={() => {
+            setVisible(false);
+          }}
+          value={[item?.id ?? "0"]}
+          onConfirm={(v) => {
+            setCirCleId(v[0] as string);
+          }}
+        />
         <Input.TextArea
-          className=" !min-h-20 border-0 mb-4"
+          className=" !min-h-20 border-0 mb-4 mt-4"
           autoSize
           value={content}
           onChange={(e) => {
@@ -81,4 +128,15 @@ export default function CreateTopic() {
       </div>
     </div>
   );
-}
+};
+export default connect(
+  (state: { circle: CircleModelType }) => ({
+    circleInfo: state.circle,
+  }),
+  {
+    setCircleList,
+    setPagination,
+    setTotal,
+    addCircleList,
+  }
+)(CreateTopic);

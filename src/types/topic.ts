@@ -70,3 +70,47 @@ export interface TopicData {
   circles: Circles;
   topicsVO: TopicsVO;
 }
+
+/**
+ * topics bo
+ *
+ * TopicBO
+ */
+export interface CreateTopicRequest {
+  /**
+   * 圈ID，默认校园圈为 1
+   */
+  circleId?: number;
+  /**
+   * 话题内容
+   */
+  content?: string;
+  /**
+   * 话题媒体数据
+   */
+  media?: string;
+  /**
+   * 话题标题
+   */
+  title?: string;
+}
+
+export enum EStaus {
+  pass = "APPROVED",
+  fail = "REJECTED",
+}
+/**
+ * review bo
+ *
+ * ReviewBO
+ */
+export interface PassTopicRequest {
+  /**
+   * 审核结果  枚举: APPROVED,REJECTED; (同意,拒绝)
+   */
+  status?: EStaus;
+  /**
+   * 话题ID
+   */
+  topicId?: number;
+}
