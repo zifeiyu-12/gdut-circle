@@ -31,26 +31,28 @@ export const TopicItem: FC<Topics> = (topic) => {
       </div>
       <div className="text-sm">{topic?.content}</div>
       <div className="leading-5 tracking-wide ">
-        {[].map((src: string, index: number) => {
-          return (
-            <Image
-              rootClassName="mx-1"
-              wrapperClassName="rounded-md"
-              src={src}
-              key={index}
-              width={100}
-              height={100}
-              preview={false}
-              onClick={(e) => {
-                e.stopPropagation();
-                setVisible(true);
-                if (previewRef) {
-                  previewRef.current?.swipeTo(index);
-                }
-              }}
-              className=" object-contain"
-            ></Image>
-          );
+        {topic.media?.split(",").map((src: string, index: number) => {
+          if (src) {
+            return (
+              <Image
+                rootClassName="mx-1"
+                wrapperClassName="rounded-md"
+                src={src}
+                key={index}
+                width={100}
+                height={100}
+                preview={false}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVisible(true);
+                  if (previewRef) {
+                    previewRef.current?.swipeTo(index);
+                  }
+                }}
+                className=" object-contain"
+              ></Image>
+            );
+          }
         })}
         <ImageViewer.Multi
           ref={previewRef}
