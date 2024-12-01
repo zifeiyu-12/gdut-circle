@@ -31,6 +31,7 @@ export interface Circles {
    * 圈名称
    */
   name?: string;
+  profile?: string;
 }
 
 export interface CirclesRequest {
@@ -42,4 +43,24 @@ export interface CirclesRequest {
    * 页大小
    */
   size: number;
+}
+
+/**
+ * circles bo
+ *
+ * CirclesBO
+ */
+export interface createCicleRequest {
+  /**
+   * 主题圈描述
+   */
+  circleDescription?: string;
+  /**
+   * 主题圈名称
+   */
+  circleName?: string;
+  /**
+   * 主题圈头像
+   */
+  circleProfile?: string;
 }

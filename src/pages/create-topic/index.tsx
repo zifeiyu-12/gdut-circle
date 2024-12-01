@@ -6,20 +6,15 @@ import { useState } from "react";
 
 import { TopicType } from "../../store/slice/topic";
 import "./index.css";
+
+import { handleUpload } from "../../utils/handleUpload";
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
 export default function CreateTopic() {
   const navigate = useNavigate();
   const [content, setContent] = useState<string>("");
 
-  const [fileList, setFileList] = useState<ImageUploadItem[]>([
-    {
-      uid: "-1",
-      name: "image.png",
-      status: "done",
-      url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-    },
-  ]);
+  const [fileList, setFileList] = useState<ImageUploadItem[]>([]);
 
   const submit = async () => {
     try {
@@ -81,19 +76,7 @@ export default function CreateTopic() {
           multiple
           style={{ "--cell-size": "100px" }}
           maxCount={9}
-          upload={async (file) => {
-            const fileReder = new FileReader();
-            fileReder.readAsDataURL(file);
-            const url: string = await new Promise((resovle) => {
-              fileReder.onload = () => {
-                resovle(fileReder.result as string);
-              };
-            });
-            return {
-              key: file.name + new Date().getTime(),
-              url,
-            };
-          }}
+          upload={handleUpload}
         />
       </div>
     </div>

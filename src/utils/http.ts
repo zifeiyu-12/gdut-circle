@@ -1,19 +1,17 @@
 import { message } from "antd";
 import axios, { AxiosError, AxiosResponse } from "axios";
-const BASE_URL = "http://localhost:3000/api/";
-const TIMEOUT = 10000;
-
+export const BASE_URL = "http://localhost:3000/api/";
+export const WS_URL = "ws://localhost:3000/ws/";
 // 创建新的axios实例
 export const service = axios.create({
   // 公共接口
   baseURL: BASE_URL,
-  // 超时时间 单位是ms，这里设置了5s的超时时间
-  timeout: TIMEOUT,
 });
 // 添加一个请求拦截器
 service.interceptors.request.use(
   (config) => {
-    config.headers["Content-Type"] = "application/json";
+    config.headers["Content-Type"] =
+      config.headers["Content-Type"] ?? "application/json";
     const token = localStorage.getItem("token") ?? "";
     if (config.url === "/user/login" || config.url === "/user/register") {
       return config;
@@ -36,7 +34,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const { data } = response;
-    if (!data.success) {
+    if (!data.success && data.message) {
       message.info(data.message);
     }
     if (data.message == "token过期,请重新登录") {

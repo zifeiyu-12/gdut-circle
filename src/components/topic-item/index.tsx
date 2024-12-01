@@ -3,14 +3,22 @@ import { FC, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { ImageViewer, MultiImageViewerRef } from "antd-mobile";
 import { Topics } from "../../types/topic";
+import { useNavigate } from "react-router-dom";
 export const TopicItem: FC<Topics> = (topic) => {
   const [visible, setVisible] = useState(false);
   const previewRef = useRef<MultiImageViewerRef>(null);
+  const navigate = useNavigate();
   return (
     <div className={`py-3 gap-y-2 flex flex-col topic-card px-4`}>
       <div className="flex justify-between ">
         <div className="flex gap-x-2">
-          <Avatar src={topic?.userInfo?.profile ?? ""}></Avatar>
+          <Avatar
+            src={topic?.userInfo?.profile ?? ""}
+            onClick={(e) => {
+              e?.stopPropagation();
+              navigate("/chat?toUserId=" + topic.userInfo?.id);
+            }}
+          ></Avatar>
           <div>
             <div className="text-sm font-medium">
               {topic?.userInfo?.username ?? "匿名"}

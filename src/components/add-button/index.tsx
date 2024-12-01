@@ -1,9 +1,10 @@
 import { AddOutline } from "antd-mobile-icons";
 import { Button } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FloatingBubble } from "antd-mobile";
 export default function AddButton() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   return (
     <FloatingBubble
       axis="xy"
@@ -18,7 +19,11 @@ export default function AddButton() {
         shape="circle"
         size="large"
         onClick={() => {
-          navigate("/create-topic");
+          let path = "/create-topic";
+          if (searchParams.get("circleId")) {
+            path += "?circleId=" + searchParams.get("circleId");
+          }
+          navigate(path);
         }}
       ></Button>
     </FloatingBubble>

@@ -13,6 +13,10 @@ export default defineConfig({
         target: "http://10.21.32.192:8888",
         changeOrigin: true,
       },
+      "/ws": {
+        target: "http://10.21.32.192:8888",
+        changeOrigin: true,
+      },
     },
   },
 });

@@ -2,8 +2,13 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Dropdown, Tabs, TabsProps } from "antd";
 import { DashOutlined, PlusOutlined } from "@ant-design/icons";
 import { TopicDetail } from "../../components/topic-detail";
-import { setCircleList } from "../../store/slice/circle";
-import { useNavigate } from "react-router-dom";
+import circle, {
+  CircleModelType,
+  setCircleList,
+  setPagination,
+  setTotal,
+} from "../../store/slice/circle";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CirclePreview } from "../../components/circle-preview";
 import { PullToRefresh } from "antd-mobile";
 import { useRequest } from "ahooks";
@@ -12,47 +17,60 @@ import { getCircleTopicList } from "../../api/topic";
 import Loading from "../../components/loading";
 import { TopicItem } from "../../components/topic-item";
 import { Topics } from "../../types/topic";
-
-export interface CirclePorps {}
-const Circle: FC<CirclePorps> = () => {
-  const [pagination, setPagination] = useState({ page: 1, size: 10 });
+import { connect } from "react-redux";
+import { Circles } from "../../types/circle";
+export interface CirclePorps {
+  circleInfo: CircleModelType;
+  setCircleList: (circle: Circles[]) => void;
+  setPaginatin: (pagination: { page: number; size: number }) => void;
+  setTotal: (total: number) => void;
+}
+const Circle: FC<CirclePorps> = ({
+  circleInfo: { circleList, page, size },
+  setCircleList,
+  setPaginatin,
+  setTotal,
+}) => {
+  const [, setSerachParams] = useSearchParams();
   const [activekey, setActivekey] = useState<string>();
-  const { data, loading } = useRequest(
-    async () => {
-      const res = await getCircleList(pagination);
-      if (res.success) {
-        setActivekey(String(res.data?.data?.[0].id));
-        return res.data?.data;
-      }
-    },
-    {
-      cacheKey: "circleList" + pagination.page + pagination.size,
+  const { loading } = useRequest(async () => {
+    const res = await getCircleList({
+      page,
+      size,
+    });
+    if (res.success) {
+      setActivekey(String(res.data?.data?.[0].id));
+      setSerachParams({ circleId: res.data?.data?.[0].id + "" });
+      setCircleList(res.data?.data ?? []);
+      return res.data?.data;
     }
-  );
+  });
   const items: TabsProps["items"] = useMemo(() => {
-    if (!data) return [];
+    if (!circleList) return [];
     const res: TabsProps["items"] = [
-      ...data.slice(0, 4).map((item) => ({
+      ...circleList.slice(0, 4).map((item) => ({
         key: String(item.id ?? new Date().getTime()),
         label: item.name ?? "匿名圈",
       })),
     ];
-    if (data.length > 4) {
+    if (circleList.length > 4) {
       res.push({
         key: "0",
         label: (
           <Dropdown
             menu={{
-              items: data.slice(4).map((item) => ({
+              items: circleList.slice(4).map((item) => ({
                 key: String(item.id ?? new Date().getTime()),
                 label: item.name ?? "匿名圈",
               })),
               onClick: ({ key }) => {
-                const index = data.findIndex((item) => String(item.id) === key);
+                const index = circleList.findIndex(
+                  (item) => String(item.id) === key
+                );
                 setCircleList([
-                  data[index],
-                  ...data.slice(0, index),
-                  ...data.slice(index + 1),
+                  circleList[index],
+                  ...circleList.slice(0, index),
+                  ...circleList.slice(index + 1),
                 ]);
                 setActivekey(key);
               },
@@ -64,7 +82,7 @@ const Circle: FC<CirclePorps> = () => {
       });
     }
     return res;
-  }, [data]);
+  }, [circleList]);
   const [topicPagination, setTopicPagination] = useState({ page: 1, size: 10 });
   const {
     data: topicData,
@@ -94,11 +112,12 @@ const Circle: FC<CirclePorps> = () => {
 
   const navigate = useNavigate();
   const item = useMemo(() => {
-    return data?.find((item) => item.id === activekey);
-  }, [data, activekey]);
+    return circleList?.find((item) => item.id === activekey);
+  }, [circleList, activekey]);
   const [start, setStart] = useState<number>(0);
   const hiddenRef = useRef<(value: boolean) => void>();
   const [topicDetail, setTopicDetail] = useState<Topics | null>();
+
   return (
     <>
       {loading || topicLoading ? (
@@ -135,6 +154,9 @@ const Circle: FC<CirclePorps> = () => {
                 items={items}
                 onChange={(key) => {
                   setActivekey(key);
+                  setSerachParams({
+                    circleId: key,
+                  });
                 }}
               ></Tabs>
               <PlusOutlined
@@ -170,4 +192,13 @@ const Circle: FC<CirclePorps> = () => {
   );
 };
 
-export default Circle;
+export default connect(
+  (state: { circle: CircleModelType }) => ({
+    circleInfo: state.circle,
+  }),
+  {
+    setCircleList,
+    setPagination,
+    setTotal,
+  }
+)(Circle);

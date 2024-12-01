@@ -7,6 +7,10 @@ import CreateTopic from "../pages/create-topic";
 import CreateCircle from "../pages/create-circle";
 import Login from "../pages/login";
 import Registe from "../pages/registe";
+import { TopicManage } from "../pages/topic-manage";
+import { CircleManage } from "../pages/circle-manage";
+import { Message } from "../pages/message";
+import { Chat } from "../pages/chat";
 export const routes = [
   {
     path: "/",
@@ -21,6 +25,22 @@ export const routes = [
         element: <Circle></Circle>,
       },
     ],
+  },
+  {
+    path: "/topic-manage",
+    element: <TopicManage></TopicManage>,
+  },
+  {
+    path: "/circle-manage",
+    element: <CircleManage></CircleManage>,
+  },
+  {
+    path: "/message",
+    element: <Message></Message>,
+  },
+  {
+    path: "/chat",
+    element: <Chat></Chat>,
   },
   {
     path: "/login",

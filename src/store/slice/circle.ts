@@ -1,37 +1,36 @@
 import { createSlice } from "@reduxjs/toolkit";
-export interface CircleType {
-  id?: string;
-  name?: string;
-  cover?: string;
-  description?: string;
+import { Circles } from "../../types/circle";
+const initalValue: CircleModelType = {
+  circleList: [],
+  page: 0,
+  size: 5,
+  total: 0,
+};
+export interface CircleModelType {
+  circleList: Circles[];
+  page: number;
+  size: number;
+  total: number;
 }
-const initalValue: CircleType[] = [
-  {
-    id: "1",
-    name: "公共圈",
-    cover: "",
-    description: "公共圈",
-  },
-];
 
 export const circleSlice = createSlice({
   name: "circle",
   initialState: initalValue,
   reducers: {
     setCircleList: (state, action) => {
-      state = action.payload;
+      state.circleList = action.payload;
       return state;
     },
-    refreshCircleList: (state) => {
-      state = [
-        ...initalValue,
-        ...JSON.parse(localStorage.getItem("circleList") ?? "[]"),
-      ];
-      return state;
+    setPagination: (state, action) => {
+      state.page = action.payload.page;
+      state.size = action.payload.size;
+    },
+    setTotal: (state, action) => {
+      state.total = action.payload;
     },
   },
 });
 // 导出action creators
-export const { setCircleList, refreshCircleList } = circleSlice.actions;
+export const { setCircleList, setPagination, setTotal } = circleSlice.actions;
 // 导出reducer
 export default circleSlice.reducer;
